@@ -102,7 +102,7 @@ ParameterManager::ParameterManager(Vehicle* vehicle)
     connect(&_initialRequestTimeoutTimer, &QTimer::timeout, this, &ParameterManager::_initialRequestTimeout);
 
     _waitingParamTimeoutTimer.setSingleShot(true);
-    _waitingParamTimeoutTimer.setInterval(3000);
+    _waitingParamTimeoutTimer.setInterval(1500);
     connect(&_waitingParamTimeoutTimer, &QTimer::timeout, this, &ParameterManager::_waitingParamTimeout);
 
     // Ensure the cache directory exists
@@ -586,7 +586,7 @@ bool ParameterManager::_fillIndexBatchQueue(bool waitingParamTimeout)
         return false;
     }
 
-    const int maxBatchSize = 10;
+    const int maxBatchSize = 5;
 
     if (waitingParamTimeout) {
         // We timed out, clear the queue and try again
@@ -608,7 +608,7 @@ bool ParameterManager::_fillIndexBatchQueue(bool waitingParamTimeout)
                 continue;
             }
 
-            if (_indexBatchQueue.count() > maxBatchSize) {
+            if (_indexBatchQueue.count() >= maxBatchSize) {
                 break;
             }
 
