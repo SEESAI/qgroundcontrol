@@ -11,7 +11,9 @@ QT_MODULES="${QT_MODULES:-qtcharts}"
 set -e
 
 apt update
-apt install python3 python3-pip -y
+apt install python3 python3-pip python3-setuptools -y
+pip3 install --upgrade pip
+pip3 install setuptools
 pip3 install aqtinstall
 aqt install --outputdir ${QT_PATH} ${QT_VERSION} ${QT_HOST} ${QT_TARGET} -m ${QT_MODULES}
 echo "Remember to export the following to your PATH: ${QT_PATH}/${QT_VERSION}/*/bin"
