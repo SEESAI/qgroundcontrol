@@ -152,8 +152,7 @@ if __name__ == "__main__":
     cmd_lst = ["./QGroundControl-v4.3.0-0.0.3.AppImage"]
     subprocess.Popen(
         cmd_lst,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        start_new_session=True,
         text=True,
         bufsize=1
     )
@@ -161,7 +160,7 @@ if __name__ == "__main__":
     # Keep window open until user closes it
     #sys.exit(progress_win.run())
     # Sleep to give QGC time to start
-    time.sleep(5)
+    time.sleep(2)
     # Close windows
     progress_win.app.quit()
     sys.exit(0)
