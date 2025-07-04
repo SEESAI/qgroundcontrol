@@ -1,7 +1,8 @@
 QGC_INI:
   CONFIG_CRITICAL_SECTIONS: ['Joysticks', 'TelemetryBarUserSettings-2', 'JoystickManager', 'LinkManager' ]
   IGNORE_PARAMS: ["Xbox%20Series%20X%20Controller\\Axis"]
-  PATH: '/home/sees/.config/QGroundControl.org/QGroundControl Daily.ini'
+  #PATH: '/home/sees/.config/QGroundControl.org/QGroundControl Daily.ini'
+  PATH: 'QGroundControl Daily.ini'
   LOCAL_MACHINE_TYPES: ['GCS','UAV','RTK_BASE','OTHER' ]
   LOCAL_MACHINE: "GCS"
 
@@ -29,12 +30,16 @@ RTSP:
 RTK_BASES:
   Lavant:
     IP: 10.8.0.10
+    PORT: "3000"
   Van-1:
     IP: 10.8.0.44
+    PORT: "3000"
   Van2:
     IP: 10.8.0.X
+    PORT: "3000"
   Van3:
     IP: 10.8.0.X
+    PORT: "3000"
 
 GIT:
   Branch: "v4.3.0-dev"
