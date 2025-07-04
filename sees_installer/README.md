@@ -37,8 +37,9 @@ RTK GPS -> QGC on Base Station -> mavlink-routerd on Base Station -> UAV
 
 By using mavlink-routerd it is possible to share the single serial port that the doodle modem provides. Without it there can only be a single QGC instance connected. 
 
+NOTE: The GCS connects to the mavlink-router UDP server created in port 3000 in any of the available network interfaces on teh base station. We use the wireguard one. 
 
-
+GOTCHA: The UDP server will only server a single GCS, so if you can't connect it's very likely there is anohter GCS connected. This is a mavlink-routerd characteritic, which is very helpful as makes it safe. We do not want two QGC instances acting as a GCS and controlling the drone!
 
 
 ## RTK Base
