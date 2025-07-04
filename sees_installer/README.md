@@ -27,6 +27,16 @@ The script sshs to the base station and starts the backup-link scripts in charge
 the RTK base. 
 ![image (24)](https://github.com/user-attachments/assets/adbb95ca-bf67-4d56-80de-0567e7fe6e41)
 
+The mavlink data path is: 
+QGC on GCS <-> mavlink-routerd on Base Station <-> UAV
+And for RTK 
+RTK GPS -> QGC on Base Station -> mavlink-routerd on Base Station -> UAV
+
+By using mavlink-routerd it is possible to share the single serial port that the doodle modem provides. Without it there can only be a single QGC instance connected. 
+
+
+
+
 
 ## RTK Base
 No splash screen is necessary so it's not shown
