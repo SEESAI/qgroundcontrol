@@ -29,11 +29,11 @@ the RTK base.
 
 The mavlink data path is: 
 
-QGC on GCS <-> mavlink-routerd on Base Station <-> UAV 
+```QGC on GCS <-> mavlink-routerd on Base Station <-> UAV ```
 
 And for RTK 
 
-RTK GPS -> QGC on Base Station -> mavlink-routerd on Base Station -> UAV
+```RTK GPS -> QGC on Base Station -> mavlink-routerd on Base Station -> UAV```
 
 By using mavlink-routerd it is possible to share the single serial port that the doodle modem provides. Without it there can only be a single QGC instance connected. 
 
