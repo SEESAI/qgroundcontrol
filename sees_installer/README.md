@@ -39,16 +39,18 @@ By using mavlink-routerd it is possible to share the single serial port that the
 
 NOTE: The GCS connects to the mavlink-router UDP server created in port 3000 in any of the available network interfaces on teh base station. We use the wireguard one. 
 
-GOTCHA: The UDP server will only server a single GCS, so if you can't connect it's very likely there is anohter GCS connected. This is a mavlink-routerd characteritic, which is very helpful as makes it safe. We do not want two QGC instances acting as a GCS and controlling the drone!
+GOTCHA: The UDP server will only server a single GCS, so if you can't connect it's very likely there is anohter GCS connected. This is a mavlink-routerd characteristic, which is very helpful as makes it safe. We do not want two QGC instances acting as a GCS and controlling the drone!
 
 
 ## RTK Base
 No splash screen is necessary so it's not shown
-It ensures that connection to RTK and UDP are on by default
+
+The splash script ensures that connection to RTK and UDP are on by default
 
 ## UAV
 No splash screen is necessary so it's not shown
-It enables connection to UDP by default
+
+The splash script enables connection to UDP by default
 
 ## OTHER
 QGC starts without any type of checks and no settings are enforced
