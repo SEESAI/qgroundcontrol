@@ -25,7 +25,8 @@ From the splash screen the user can select the drone they want to connect to and
 
 The script sshs to the base station and starts the backup-link scripts in charge of starting mavlink-routerd to the appropiate UAV and also starts a local QGC that connects to the GPS and acts as
 the RTK base. 
-![](/Users/ealdaz/Downloads/image (24).png)
+![image (24)](https://github.com/user-attachments/assets/adbb95ca-bf67-4d56-80de-0567e7fe6e41)
+
 
 ## RTK Base
 No splash screen is necessary so it's not shown
