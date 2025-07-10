@@ -3,8 +3,8 @@ QGC_INI:
   IGNORE_PARAMS: ["Xbox%20Series%20X%20Controller\\Axis"]
   #PATH: '/home/sees/.config/QGroundControl.org/QGroundControl Daily.ini'
   PATH: 'QGroundControl Daily.ini'
-  LOCAL_MACHINE_TYPES: ['GCS','UAV','RTK_BASE','OTHER' ]
-  LOCAL_MACHINE: "GCS"
+  LOCAL_MACHINE_TYPES: ['GCS','UAV','RTK_BASE','VAN','OTHER' ]
+  LOCAL_MACHINE: "VAN"
 
 
 # The IPs used for RTSP are those of the OpenVPN of the NUC (Elsight) or Wireguard NUC (Doodle)

@@ -68,13 +68,14 @@ class QGCStartWindow:
         self.continue_button = QPushButton("Continue")
         self.continue_button.clicked.connect(self.on_continue_clicked)
         self.continue_button.setEnabled(False)  # Hidden by default
-        layoutHconfirm.addWidget(self.continue_button)
 
         # Create abort button
         self.abort_button = QPushButton("Abort")
         self.abort_button.clicked.connect(self.on_abort_clicked)
         self.abort_button.setEnabled(True)  # Hidden by default
+
         layoutHconfirm.addWidget(self.abort_button)
+        layoutHconfirm.addWidget(self.continue_button)
 
         self.btn_uav_group = QButtonGroup()
         self.btn_uav_lst = []
@@ -204,6 +205,57 @@ def start_remote_mavlink_rtk_server(rtk_base_name, rtk_base_ip, drone_name, mavl
     print(f"Running command {cmd} on {rtk_base_name} at {rtk_base_ip}")
     _, stdout_, stderr_ = client.exec_command(cmd)
 
+def check_qgc_configuration_file():
+    # Prepare to download from github
+    load_dotenv()
+    branch = config["GIT"]["Branch"]
+    qgc_github = QGCGitHub(branch)
+
+    gitfilepath = "sees_installer/QGroundControl%20Daily.ini"
+
+    try:
+        qgc_ini_file = qgc_github.download_file(gitfilepath)
+    except Exception as e:
+        print(
+            f"{e}\n\nPlease install a .env file in the script path with the Github API key which you can find in:\nhttps://www.notion.so/seesai/QGroundcontrol-Sees-flavour-17cf348e991880faa376c0317c9d3ce0")
+        exit(1)
+    # Save the file in case user wants to inspect and compare manually.
+    file_output = "QGroundControl_github.ini"
+
+    with open(file_output, 'wb') as file:
+        file.write(qgc_ini_file)
+    print(f"File downloaded and saved to {file_output}")
+
+    config_github = configparser.ConfigParser()
+    config_github.optionxform = str  # This preserves case
+    config_github.read('QGroundControl_github.ini')
+    github_ini_lines = section_to_text(config_github, CONFIG_CRITICAL_SECTIONS)
+
+    local_ini_lines = section_to_text(qgc_config_local, CONFIG_CRITICAL_SECTIONS)
+    diff = list(
+        difflib.unified_diff(github_ini_lines, local_ini_lines, fromfile='QGC github', tofile='QGC local', n=0))
+
+    qgc_start_win.update_message("Checking QGroundControl config file...")
+    time.sleep(1)  # Give time to display message
+
+    if len(diff) > 0:
+        # There are some differences
+        diff_content = ''.join(diff)
+        qgc_start_win.wait_for_user(f"The files are different, what do you want to do?\n{diff_content}")
+        print(f"These are the differences found \n{diff_content}")
+        if qgc_start_win.abort_execution:
+            print("User aborted, exiting script.")
+            qgc_start_win.app.quit()
+            sys.exit(1)
+        qgc_start_win.update_message("Ignoring differences, starting QGC...")
+        time.sleep(1)  # Display message
+    else:
+        qgc_start_win.wait_for_user("No differences found, select drone to start QGC...")
+        if qgc_start_win.abort_execution:
+            print("User aborted, exiting script.")
+            qgc_start_win.app.quit()
+            sys.exit(1)
+        time.sleep(1)  # Display message
 
 if __name__ == "__main__":
     # Load settings
@@ -224,82 +276,50 @@ if __name__ == "__main__":
 
     print(f"Local machine configured as {LOCAL_MACHINE}")
 
-    if LOCAL_MACHINE == "GCS":
+    if LOCAL_MACHINE == "GCS" or LOCAL_MACHINE == "VAN":
+        # Generally the GCS is in a different machine than the RTK_Base
+        # In a van QGC is used as RTK server but can also be used as GCS, so it's a special case
+
         # Create the progress window
         qgc_start_win = QGCStartWindow()
-        # Prepare to download from github
-        load_dotenv()
-        branch = config["GIT"]["Branch"]
-        qgc_github = QGCGitHub(branch)
 
-        gitfilepath = "sees_installer/QGroundControl%20Daily.ini"
+        check_qgc_configuration_file()
 
-        try:
-            qgc_ini_file = qgc_github.download_file(gitfilepath)
-        except Exception as e:
-            print(f"{e}\n\nPlease install a .env file in the script path with the Github API key which you can find in:\nhttps://www.notion.so/seesai/QGroundcontrol-Sees-flavour-17cf348e991880faa376c0317c9d3ce0")
-            exit(1)
-        # Save the file in case user wants to inspect and compare manually.
-        file_output = "QGroundControl_github.ini"
-
-        with open(file_output, 'wb') as file:
-            file.write(qgc_ini_file)
-        print(f"File downloaded and saved to {file_output}")
-
-        config_github = configparser.ConfigParser()
-        config_github.optionxform = str  # This preserves case
-        config_github.read('QGroundControl_github.ini')
-        github_ini_lines = section_to_text(config_github, CONFIG_CRITICAL_SECTIONS)
-
-        local_ini_lines = section_to_text(qgc_config_local, CONFIG_CRITICAL_SECTIONS)
-        diff = list(
-            difflib.unified_diff(github_ini_lines, local_ini_lines, fromfile='QGC github', tofile='QGC local', n=0))
-
-        qgc_start_win.update_message("Checking QGroundControl config file...")
-        time.sleep(1)  # Give time to display message
-
-        if len(diff) > 0:
-            # There are some differences
-            diff_content = ''.join(diff)
-            qgc_start_win.wait_for_user(f"The files are different, what do you want to do?\n{diff_content}")
-            print(f"These are the differences found \n{diff_content}")
-            if qgc_start_win.abort_execution:
-                print("User aborted, exiting script.")
-                qgc_start_win.app.quit()
-                sys.exit(1)
-            qgc_start_win.update_message("Ignoring differences, starting QGC...")
-            time.sleep(1)  # Display message
-        else:
-            qgc_start_win.wait_for_user("No differences found, select drone to start QGC...")
-            if qgc_start_win.abort_execution:
-                print("User aborted, exiting script.")
-                qgc_start_win.app.quit()
-                sys.exit(1)
-            time.sleep(1)  # Display message
-            # Update config according to drone selection
-
+        # Update config according to drone selection
         drone_name = qgc_start_win.drone_selected
         drone_info = UAV_DICT[drone_name]
 
         base_name = qgc_start_win.rtk_base_selected
         base_info = RTK_BASE_DICT[base_name]
 
-        print(f"Setting QGC connection to {drone_name} at {drone_info['MAVLINK_IP']}")
+        print(f"Setting QGC connection to {drone_name} through base {base_info['IP']}")
         if qgc_start_win.enable_fpv:  # ToDo, accessing qgc_start_win direclty is not pretty
             qgc_config_local['Video']['rtspUrl'] = f"rtsp://{drone_info['RTSP_IP']}:{RTSP_PORT}/fpv"
             qgc_config_local['Video']['videoSource'] = "RTSP Video Stream"
         else:
-            qgc_config_local['Video']['vieoSource'] = "Video Stream Disabled"
-        qgc_config_local['LinkConfigurations']['Link0\\auto'] = "true"
-        qgc_config_local['LinkConfigurations']['Link0\\host0'] = base_info["IP"]
-        qgc_config_local['LinkConfigurations']['Link0\\port0'] = base_info["PORT"]
-        qgc_config_local['LinkConfigurations']['Link0\\port'] = base_info["PORT"]
-        qgc_config_local['LinkConfigurations']['Link0\\name'] = f"RTK base to {drone_name}"
-        qgc_config_local['LinkManager']['autoConnectRTKGPS'] = "false"
-        qgc_config_local['LinkManager']['autoConnectUDP'] = "false"
+            qgc_config_local['Video']['videoSource'] = "Video Stream Disabled"
 
-        start_remote_mavlink_rtk_server(base_name, base_info["IP"], drone_name, drone_info["MAVLINK_IP"])
+        if LOCAL_MACHINE == "GCS":
+            qgc_config_local['LinkConfigurations']['Link0\\auto'] = "true"
+            qgc_config_local['LinkConfigurations']['Link0\\host0'] = base_info["IP"]
+            qgc_config_local['LinkConfigurations']['Link0\\port0'] = base_info["PORT"]
+            qgc_config_local['LinkConfigurations']['Link0\\port'] = base_info["PORT"]
+            qgc_config_local['LinkConfigurations']['Link0\\name'] = f"RTK base to {drone_name}"
+            qgc_config_local['LinkManager']['autoConnectRTKGPS'] = "false"
+            qgc_config_local['LinkManager']['autoConnectUDP'] = "false"
 
+            start_remote_mavlink_rtk_server(base_name, base_info["IP"], drone_name, drone_info["MAVLINK_IP"])
+
+
+        elif LOCAL_MACHINE == "VAN":
+            # QGC is used as RTK server but can also be used as GCS
+            print("Setting RTK and UDP Comms options to true.")
+            qgc_config_local['LinkManager']['autoConnectRTKGPS'] = "true"
+            qgc_config_local['LinkManager']['autoConnectUDP'] = "true"
+
+            # In the van the mavlink server is in the same machine
+            cmd = f'DISPLAY=:0 /home/sees/Work/Sees/BackupLink/BackupCommsGUI/launch_backup_comms_and_QGC.py {drone_name} 127.0.0.1'
+            os.system(cmd)
 
     elif LOCAL_MACHINE == "RTK_BASE":
         print("Setting RTK and UDP Comms options to true.")
