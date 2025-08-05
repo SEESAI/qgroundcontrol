@@ -1,0 +1,105 @@
+name: sees Linux Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+    - main
+    - 'v*'
+
+jobs:
+  build:
+    runs-on:  ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Get version from tags
+        id: get_version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Add version file
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo ${{ steps.get_version.outputs.VERSION }} >> VERSION
+      
+      - name: Add placeholder version file for PR builds
+        if: github.event_name == 'pull_request'
+        run: echo "dev-build" >> VERSION
+      
+      - name: Install QGroundControl dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 libsdl2-dev
+
+      - name: Setup Docker Build
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker Image
+        run: |
+          docker build --file ./deploy/docker/Dockerfile-build-linux -t qgc-ubuntu-docker .
+      
+      - name: Setup ccache
+        run: |
+          mkdir -p ~/.ccache/tmp
+      
+      - name: Create build directory
+        run: |
+          mkdir -p build
+      
+      - name: Run Docker Container
+        run: |
+          USER_ID=$(id -u)
+          GROUP_ID=$(id -g)
+          docker run --rm --user "$USER_ID:$GROUP_ID" -v ${HOME}/.ccache:/.ccache -v ${PWD}:/project/source -v ${PWD}/build:/project/build qgc-ubuntu-docker
+      
+      - name: Create AppImage
+        run: |
+          chmod +x ./deploy/create_linux_appimage.sh
+          ./deploy/create_linux_appimage.sh . build/staging
+
+      - name: Update AppImage
+        run: |
+          mv QGroundControl.AppImage QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+          chmod +x QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+      
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QGroundControl-${{ steps.get_version.outputs.VERSION }}-AppImage
+          path: QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+             
+  release:
+    runs-on: ubuntu-22.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Get version from tags
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Download AppImage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: QGroundControl-${{ steps.get_version.outputs.VERSION }}-AppImage
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: QGroundControl ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            For standalone operation use instructions on QGroundControl site.
+
+            To use in the context of sees.ai operations follow instructions in QGroundControl launcher:
+            https://github.com/SEESAI/qgroundcontrol_launcher
+          draft: false
+          prerelease: false
+          files: |
+            QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
