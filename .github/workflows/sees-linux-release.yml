@@ -64,14 +64,14 @@ jobs:
 
       - name: Update AppImage
         run: |
-          mv QGroundControl.AppImage QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
-          chmod +x QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+          mv QGroundControl.AppImage QGroundControl-v${{ steps.get_version.outputs.VERSION }}.AppImage
+          chmod +x QGroundControl-v${{ steps.get_version.outputs.VERSION }}.AppImage
       
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QGroundControl-${{ steps.get_version.outputs.VERSION }}-AppImage
-          path: QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+          name: QGroundControl-v${{ steps.get_version.outputs.VERSION }}-AppImage
+          path: QGroundControl-v${{ steps.get_version.outputs.VERSION }}.AppImage
              
   release:
     runs-on: ubuntu-22.04
@@ -85,13 +85,13 @@ jobs:
       - name: Download AppImage artifact
         uses: actions/download-artifact@v4
         with:
-          name: QGroundControl-${{ steps.get_version.outputs.VERSION }}-AppImage
+          name: QGroundControl-v${{ steps.get_version.outputs.VERSION }}-AppImage
       
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: QGroundControl ${{ steps.get_version.outputs.VERSION }}
+          name: QGroundControl v${{ steps.get_version.outputs.VERSION }}
           body: |
             For standalone operation use instructions on QGroundControl site.
 
@@ -100,6 +100,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            QGroundControl-${{ steps.get_version.outputs.VERSION }}.AppImage
+            QGroundControl-v${{ steps.get_version.outputs.VERSION }}.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
