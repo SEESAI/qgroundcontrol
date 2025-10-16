@@ -66,6 +66,8 @@ struct sensor_gps_s {
 	float cog_rad;
 	int32_t timestamp_time_relative;
 	float heading;
+	float heading_offset;
+	float heading_accuracy;
 	uint8_t fix_type;
 	bool vel_ned_valid;
 	uint8_t satellites_used;
