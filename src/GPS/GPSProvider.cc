@@ -86,7 +86,11 @@ void GPSProvider::run()
             gpsDriver = new GPSDriverSBF(&callbackEntry, this, &_reportGpsPos, _pReportSatInfo, 5);
             baudrate = 0; // auto-configure
         } else {
-            gpsDriver = new GPSDriverUBX(GPSDriverUBX::Interface::UART, &callbackEntry, this, &_reportGpsPos, _pReportSatInfo);
+            // RTCM mode force stationary dynamic model. Reference: https://github.com/PX4/PX4-GPSDrivers/blob/main/src/ubx.cpp#L352
+            uint8_t dynamicModel = 2; 
+            uint8_t minSatelliteSignalLevel = 35;
+            int8_t minElevation = 15;
+            gpsDriver = new GPSDriverUBX(GPSDriverUBX::Interface::UART, &callbackEntry, this, &_reportGpsPos, _pReportSatInfo, dynamicModel, minSatelliteSignalLevel, minElevation);
             baudrate = 0; // auto-configure
         }
         gpsDriver->setSurveyInSpecs(_surveyInAccMeters * 10000.0f, _surveryInDurationSecs);
@@ -213,6 +217,9 @@ int GPSProvider::callback(GPSCallbackType type, void *data1, int data2)
 
         case GPSCallbackType::gotRTCMMessage:
             gotRTCMData((uint8_t*) data1, data2);
+            break;
+
+        case GPSCallbackType::gotRelativePositionMessage:
             break;
 
         case GPSCallbackType::surveyInStatus:
