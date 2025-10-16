@@ -219,6 +219,9 @@ int GPSProvider::callback(GPSCallbackType type, void *data1, int data2)
             gotRTCMData((uint8_t*) data1, data2);
             break;
 
+        case GPSCallbackType::gotRelativePositionMessage:
+            break;
+
         case GPSCallbackType::surveyInStatus:
         {
             SurveyInStatus* status = (SurveyInStatus*)data1;
