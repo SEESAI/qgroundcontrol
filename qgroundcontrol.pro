@@ -219,6 +219,7 @@ contains (DEFINES, QGC_DISABLE_UVC) {
 
 LinuxBuild {
     CONFIG += link_pkgconfig
+    QT += dbus
 }
 
 # Qt configuration
@@ -406,6 +407,7 @@ INCLUDEPATH += \
     src/Settings \
     src/Terrain \
     src/Vehicle \
+    src/ScreenLock \
     src/Audio \
     src/comm \
     src/input \
@@ -659,6 +661,7 @@ HEADERS += \
     src/QGCQGeoCoordinate.h \
     src/QGCTemporaryFile.h \
     src/QGCToolbox.h \
+    src/ScreenLock/ScreenLockManager.h \
     src/QmlControls/AppMessages.h \
     src/QmlControls/EditPositionDialogController.h \
     src/QmlControls/FlightPathSegment.h \
@@ -917,6 +920,7 @@ SOURCES += \
     src/QGCQGeoCoordinate.cc \
     src/QGCTemporaryFile.cc \
     src/QGCToolbox.cc \
+    src/ScreenLock/ScreenLockManager.cc \
     src/QmlControls/AppMessages.cc \
     src/QmlControls/EditPositionDialogController.cc \
     src/QmlControls/FlightPathSegment.cc \

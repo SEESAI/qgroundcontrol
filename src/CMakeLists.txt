@@ -143,6 +143,7 @@ add_subdirectory(PlanView)
 add_subdirectory(PositionManager)
 add_subdirectory(QmlControls)
 add_subdirectory(QtLocationPlugin)
+add_subdirectory(ScreenLock)
 add_subdirectory(Settings)
 if (${QGC_GST_TAISYNC_ENABLED})
   add_subdirectory(Taisync)
@@ -182,6 +183,7 @@ target_link_libraries(qgc
 		PositionManager
 		QmlControls
 		QtLocationPlugin
+		ScreenLock
 		Settings
 		Terrain
 		uas
