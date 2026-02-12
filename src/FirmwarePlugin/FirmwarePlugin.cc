@@ -1033,6 +1033,8 @@ uint32_t FirmwarePlugin::highLatencyCustomModeTo32Bits(uint16_t hlCustomMode)
 
 void FirmwarePlugin::checkIfIsLatestStable(Vehicle* vehicle)
 {
+    Q_UNUSED(vehicle);
+    return; // SEES: Suppress firmware version popup - we manage our own firmware
     // This is required as mocklink uses a hardcoded firmware version
     if (qgcApp()->runningUnitTests()) {
         qCDebug(FirmwarePluginLog) << "Skipping version check";

@@ -825,6 +825,7 @@ bool QGCApplication::isInternetAvailable()
 
 void QGCApplication::_checkForNewVersion()
 {
+    return; // SEES: Suppress new version popup - we manage our own releases
     if (!_runningUnitTests) {
         if (_parseVersionText(applicationVersion(), _majorVersion, _minorVersion, _buildVersion)) {
             QString versionCheckFile = toolbox()->corePlugin()->stableVersionCheckFileUrl();
