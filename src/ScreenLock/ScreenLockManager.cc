@@ -1,5 +1,7 @@
 #include "ScreenLockManager.h"
 #include "MultiVehicleManager.h"
+#include "Vehicle.h"
+#include "VehicleLinkManager.h"
 #include "QGCLoggingCategory.h"
 
 #include <QDBusConnection>
@@ -29,29 +31,48 @@ void ScreenLockManager::setToolbox(QGCToolbox* toolbox)
     connect(manager, &MultiVehicleManager::vehicleRemoved, this, &ScreenLockManager::_vehicleRemoved);
 
     // Handle vehicles that may already be connected
-    _vehicleCount = manager->vehicles()->count();
-    _updateInhibition();
+    for (int i = 0; i < manager->vehicles()->count(); i++) {
+        _vehicleAdded(qobject_cast<Vehicle*>(manager->vehicles()->get(i)));
+    }
 }
 
 void ScreenLockManager::_vehicleAdded(Vehicle* vehicle)
 {
-    Q_UNUSED(vehicle);
-    _vehicleCount++;
-    qCDebug(ScreenLockManagerLog) << "Vehicle added, count:" << _vehicleCount;
+    _vehicles.insert(vehicle);
+    connect(vehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged,
+            this, &ScreenLockManager::_communicationLostChanged);
+    qCDebug(ScreenLockManagerLog) << "Vehicle added, tracking" << _vehicles.count() << "vehicles";
     _updateInhibition();
 }
 
 void ScreenLockManager::_vehicleRemoved(Vehicle* vehicle)
 {
-    Q_UNUSED(vehicle);
-    _vehicleCount--;
-    qCDebug(ScreenLockManagerLog) << "Vehicle removed, count:" << _vehicleCount;
+    _vehicles.remove(vehicle);
+    disconnect(vehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged,
+               this, &ScreenLockManager::_communicationLostChanged);
+    qCDebug(ScreenLockManagerLog) << "Vehicle removed, tracking" << _vehicles.count() << "vehicles";
     _updateInhibition();
+}
+
+void ScreenLockManager::_communicationLostChanged(bool communicationLost)
+{
+    qCDebug(ScreenLockManagerLog) << "Communication lost changed:" << communicationLost;
+    _updateInhibition();
+}
+
+bool ScreenLockManager::_anyVehicleCommunicating() const
+{
+    for (Vehicle* vehicle : _vehicles) {
+        if (!vehicle->vehicleLinkManager()->communicationLost()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ScreenLockManager::_updateInhibition()
 {
-    bool shouldInhibit = (_vehicleCount > 0);
+    bool shouldInhibit = _anyVehicleCommunicating();
 
     if (shouldInhibit && !_inhibiting) {
         _inhibit();
